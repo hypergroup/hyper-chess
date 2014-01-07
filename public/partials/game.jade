@@ -2,11 +2,19 @@ h1(data-hyper-bind="game.name")
 form(data-hyper-form="game.join")
   input(type="submit", value="Join Game")
 
-div(data-hyper="game.state as pieces")
-  div(data-ng-repeat="piece in pieces")
-    span(data-hyper-bind="piece.type")
-    |  - 
-    span(data-hyper-bind="piece.position")
+.board(data-hyper="game.state as pieces")
+  - for (var i = 0; i < 8; i++)
+    .row
+      - for (var x = 0; x < 8; x++)
+        .column
+  .piece(data-ng-repeat="piece in pieces",
+         data-hyper="piece.position, piece.color, piece.type",
+         data-ng-class="[position, color, type]")
+    .move(data-ng-repeat="option in piece.move.input.position.options",
+          data-hyper="option.text, option.value",
+          data-ng-class="[text, value]")
+
     form(data-hyper-form="piece.move")
-      input(data-ng-repeat="input in inputs", data-hyper-input="input")
+      input(data-ng-repeat="input in inputs",
+            data-hyper-input="input")
       input(type="submit")
