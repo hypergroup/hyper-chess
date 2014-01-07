@@ -6,7 +6,9 @@
   "keywords": [],
   "dependencies": {
     "CamShaft/simple-ui": "*",
-    "component/cookie": "*"
+    "component/cookie": "*",
+    "CamShaft/hyper-emitter": "*",
+    "CamShaft/hyper-emitter-ws": "*"
   },
   "development": {},
   "main": "public/javascripts/main.js",
@@ -26,5 +28,6 @@
     "public/partials/game.jade",
     "public/partials/sidenav.jade"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "remotes": []
 }

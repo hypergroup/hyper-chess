@@ -1,6 +1,8 @@
 var express = require('express');
 var NeDB = require('nedb');
 var Chess = require('chess.js').Chess;
+var superagent = require('superagent');
+var envs = require('envs');
 
 function createDB(name) {
   return new NeDB({
@@ -14,6 +16,18 @@ var db = {
   games: createDB('games'),
   state: createDB('state')
 };
+
+var EMITTER_URL = envs('EMITTER_URL');
+function notify(url, fn) {
+  fn = fn || function(){};
+  if (!EMITTER_URL) return fn();
+  superagent
+    .post(EMITTER_URL)
+    .send({url: url})
+    .end(function(err, res) {
+      fn(err);
+    });
+}
 
 var app = module.exports = express();
 
@@ -101,7 +115,9 @@ app.post('/games', restrict(), function(req, res, next) {
   };
   db.games.insert(data, function(err, doc) {
     if (err) return next(err);
-    res.redirect(303, req.base + '/games/' + doc._id);
+    var url = req.base + '/games/' + doc._id;
+    notify(url);
+    res.redirect(303, url);
   });
 });
 
@@ -162,7 +178,9 @@ app.post('/games/:game', restrict(), function(req, res, next) {
     };
     db.state.insert(state, function(err) {
       if (err) return next(err);
-      res.redirect(req.base + '/games/' + req.params.game);
+      var url = req.base + '/games/' + req.params.game;
+      notify(url);
+      res.redirect(url);
     });
   });
 });
@@ -207,7 +225,7 @@ app.get('/games/:game/state', function(req, res, next) {
                 })
               }
             }
-          }; 
+          };
         }
       };
       pieces.push(json);
@@ -215,7 +233,12 @@ app.get('/games/:game/state', function(req, res, next) {
 
     res.json({
       data: pieces,
-      turn: state.turn
+      turn: turn,
+      check: board.in_check(),
+      checkmake: board.in_checkmate(),
+      draw: board.in_draw(),
+      stalemate: board.in_stalemate(),
+      threefold: board.in_threefold_repetition()
     });
   });
 });
@@ -242,7 +265,9 @@ app.post('/games/:game/state', function(req, res, next) {
     // TODO check ending conditions
 
     db.state.update({_id: state._id}, {$set: {board: board.fen()}}, function(err) {
-      res.redirect(req.base + '/games/' + req.params.game + '/state');
+      var url = req.base + '/games/' + req.params.game + '/state';
+      notify(url);
+      res.redirect(url);
     });
   });
 });
@@ -270,7 +295,9 @@ app.post('/users', function(req, res, next) {
     secret: user.secret
   };
   db.users.insert(user, function(err, doc) {
-    res.redirect(303, req.base + '/users/' + doc._id);
+    var url = req.base + '/users/' + doc._id;
+    notify(url);
+    res.redirect(303, url);
   });
 });
 

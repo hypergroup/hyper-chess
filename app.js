@@ -18,6 +18,7 @@ var app = module.exports = stack({
  */
 
 app.env('API_URL', '/api');
+app.env('WS_URL', envs('EMITTER_URL'));
 
 /**
  * Mount the api
