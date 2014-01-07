@@ -1,0 +1,27 @@
+{
+  "repo": "CamShaft/hyper-chess",
+  "name": "hyper-chess",
+  "description": "Chess hypermedia api",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {
+    "CamShaft/simple-ui": "*"
+  },
+  "development": {},
+  "main": "public/javascripts/main.js",
+  "scripts": [
+    "public/javascripts/index.js",
+    "public/javascripts/main.js",
+    "public/javascripts/routes.js"
+  ],
+  "styles": [
+    "public/stylesheets/index.styl"
+  ],
+  "angular-templates": [
+    "public/partials/footer.jade",
+    "public/partials/header.jade",
+    "public/partials/index.jade",
+    "public/partials/sidenav.jade"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,29 @@
+{
+  "name": "hyper-chess",
+  "version": "0.0.0",
+  "description": "Chess hypermedia api",
+  "author": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "NODE_ENV=test ./node_modules/.bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CamShaft/hyper-chess"
+  },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.x.x"
+  },
+  "dependencies": {
+    "simple-stack-ui": "~0.2.2",
+    "startup": "~0.3.0",
+    "envs": "~0.1.4",
+    "express": "~3.4.7"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "should": "*",
+    "lr": "*"
+  }
+}
