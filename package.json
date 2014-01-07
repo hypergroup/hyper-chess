@@ -20,7 +20,8 @@
     "startup": "~0.3.0",
     "envs": "~0.1.4",
     "express": "~3.4.7",
-    "nedb": "~0.9.3"
+    "nedb": "~0.9.3",
+    "chess.js": "jhlywa/chess.js"
   },
   "devDependencies": {
     "mocha": "*",

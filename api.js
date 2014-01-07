@@ -1,5 +1,6 @@
 var express = require('express');
 var NeDB = require('nedb');
+var Chess = require('chess.js').Chess;
 
 function createDB(name) {
   return new NeDB({
@@ -13,41 +14,6 @@ var db = {
   games: createDB('games'),
   state: createDB('state')
 };
-
-var init = [
-  {'position': 'a1', 'piece': 'rook', player: 0},
-  {'position': 'b1', 'piece': 'knight', player: 0},
-  {'position': 'c1', 'piece': 'bishop', player: 0},
-  {'position': 'd1', 'piece': 'king', player: 0},
-  {'position': 'e1', 'piece': 'queen', player: 0},
-  {'position': 'f1', 'piece': 'bishop', player: 0},
-  {'position': 'g1', 'piece': 'knight', player: 0},
-  {'position': 'h1', 'piece': 'rook', player: 0},
-  {'position': 'a2', 'piece': 'pawn', player: 0},
-  {'position': 'b2', 'piece': 'pawn', player: 0},
-  {'position': 'c2', 'piece': 'pawn', player: 0},
-  {'position': 'd2', 'piece': 'pawn', player: 0},
-  {'position': 'e2', 'piece': 'pawn', player: 0},
-  {'position': 'f2', 'piece': 'pawn', player: 0},
-  {'position': 'g2', 'piece': 'pawn', player: 0},
-  {'position': 'h2', 'piece': 'pawn', player: 0},
-  {'position': 'a7', 'piece': 'pawn', player: 1},
-  {'position': 'b7', 'piece': 'pawn', player: 1},
-  {'position': 'c7', 'piece': 'pawn', player: 1},
-  {'position': 'd7', 'piece': 'pawn', player: 1},
-  {'position': 'e7', 'piece': 'pawn', player: 1},
-  {'position': 'f7', 'piece': 'pawn', player: 1},
-  {'position': 'g7', 'piece': 'pawn', player: 1},
-  {'position': 'h7', 'piece': 'pawn', player: 1},
-  {'position': 'a8', 'piece': 'rook', player: 1},
-  {'position': 'b8', 'piece': 'knight', player: 1},
-  {'position': 'c8', 'piece': 'bishop', player: 1},
-  {'position': 'd8', 'piece': 'king', player: 1},
-  {'position': 'e8', 'piece': 'queen', player: 1},
-  {'position': 'f8', 'piece': 'bishop', player: 1},
-  {'position': 'g8', 'piece': 'knight', player: 1},
-  {'position': 'h8', 'piece': 'rook', player: 1}
-];
 
 var app = module.exports = express();
 
@@ -131,7 +97,7 @@ app.post('/games', restrict(), function(req, res, next) {
   if (!game.name) return next(new Error('request missing "name" parameter'));
   var data = {
     name: game.name,
-    owner: req.user._id
+    white: req.user._id
   };
   db.games.insert(data, function(err, doc) {
     if (err) return next(err);
@@ -153,14 +119,14 @@ app.get('/games/:game', restrict(), function(req, res) {
 
   var json = {
     name: game.name,
-    owner: {
-      href: req.base + '/users/' + game.owner
+    white: {
+      href: req.base + '/users/' + game.white
     }
   };
 
-  if (game.opponent) {
-    json.opponent = {
-      href: req.base + '/users/' + game.opponent
+  if (game.black) {
+    json.black = {
+      href: req.base + '/users/' + game.black
     };
 
     json.state = {
@@ -168,14 +134,14 @@ app.get('/games/:game', restrict(), function(req, res) {
     };
   }
 
-  if (!game.opponent && game.owner !== req.user._id) {
+  if (!game.black && game.white !== req.user._id) {
     json.join = {
       method: 'POST',
       action: req.base + '/games/' + req.params.game
     };
   }
 
-  if (game.opponent === req.user._id || game.owner === req.user._id) {
+  if (game.black === req.user._id || game.white === req.user._id) {
     json.chat = {
       href: req.base + '/games/' + req.params.game + '/chat'
     };
@@ -187,12 +153,11 @@ app.get('/games/:game', restrict(), function(req, res) {
 app.post('/games/:game', restrict(), function(req, res, next) {
   var game = res.locals.game;
   // There's probably a race condition here
-  if (game.opponent) return res.send(409);
-  game.opponent = req.user._id;
+  if (game.black) return res.send(409);
+  game.black = req.user._id;
   db.games.update({_id: req.params.game}, game, function(err) {
     var state = {
-      turn: 0,
-      pieces: init,
+      board: (new Chess()).fen(),
       game: game._id
     };
     db.state.insert(state, function(err) {
@@ -208,39 +173,76 @@ app.get('/games/:game/state', function(req, res, next) {
     if (!state) return res.send(404);
 
     var game = res.locals.game;
-    var isOwner = game.owner === req.user._id;
-    var isOpp = game.opponent === req.user._id;
-    res.json({
-      data: state.pieces.map(function(piece) {
-        var pstate = {
-          type: piece.piece,
-          position: piece.position,
-          player: {
-            href: req.base + '/users/' + (piece.player ? game.opponent : game.owner)
-          }
-        };
+    var isWhite = game.white === req.user._id;
+    var isBlack = game.black === req.user._id;
 
-        if (isOwner && piece.player === 0 && state.turn % 2 === 0
-           || isOpp && piece.player === 1 && state.turn % 2 === 1) {
-          pstate.move = {
-            action: req.base + '/games/' + req.params.game + '/state',
+    var board = new Chess(state.board);
+
+    var turn = board.turn();
+
+    var pieces = [];
+    board.SQUARES.forEach(function(square) {
+      var piece = board.get(square);
+      if (!piece) return;
+      var json = {
+        position: square,
+        type: piece.type,
+        color: piece.color
+      };
+      if (isWhite && turn === 'w' && json.color === 'w'
+       || isBlack && turn === 'b' && json.color === 'b') {
+        var moves = board.moves({square: json.position});
+        if (moves.length) {
+          json.move = {
             method: 'POST',
+            action: req.base + '/games/' + req.params.game + '/state',
             input: {
-              prev: {
-                value: pstate.position,
-                type: 'hidden'
-              },
               position: {
                 type: 'select',
-                options: computeMoves(piece, state.pieces)
+                options: moves.map(function(move) {
+                  return {
+                    value: move,
+                    text: move
+                  };
+                })
               }
             }
-          };
+          }; 
         }
+      };
+      pieces.push(json);
+    });
 
-        return pstate;
-      }),
+    res.json({
+      data: pieces,
       turn: state.turn
+    });
+  });
+});
+
+app.post('/games/:game/state', function(req, res, next) {
+  var game = res.locals.game;
+  if (!req.body || !req.body.position) return next(new Error('missing position parameter'));
+  db.state.findOne({game: req.params.game}, function(err, state) {
+    if (err) return next(err);
+    if (!state) return res.send(404);
+
+    var isWhite = game.white === req.user._id;
+    var isBlack = game.black === req.user._id;
+
+    var board = new Chess(state.board);
+    var turn = board.turn();
+
+    if (turn === 'w' && isBlack
+     || turn === 'b' && isWhite) return res.send(409);
+
+    var result = board.move(req.body.position);
+    if (!result) return next(new Error('bad move'));
+
+    // TODO check ending conditions
+
+    db.state.update({_id: state._id}, {$set: {board: board.fen()}}, function(err) {
+      res.redirect(req.base + '/games/' + req.params.game + '/state');
     });
   });
 });
@@ -316,8 +318,4 @@ function restrict() {
     if (!req.user) return res.send(401);
     next();
   };
-}
-
-function computeMoves(piece, pieces) {
-  return [];
 }
