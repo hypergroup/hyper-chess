@@ -5,7 +5,8 @@ form(data-ng-controller="LoginController", data-hyper-form=".login", data-hyper-
 
 div(data-hyper=".games")
   ul
-    li(data-ng-repeat="game in games", data-hyper-bind="game.name")
+    li(data-ng-repeat="game in games")
+      a(data-hyper-link="/games/:game", data-hyper-bind="game.name")
   form(data-hyper-form=".games.create")
     legend Create Game
     input(data-ng-repeat="input in inputs", data-hyper-input="input")

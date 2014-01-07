@@ -23,6 +23,7 @@
     "public/partials/footer.jade",
     "public/partials/header.jade",
     "public/partials/index.jade",
+    "public/partials/game.jade",
     "public/partials/sidenav.jade"
   ],
   "license": "MIT"

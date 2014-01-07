@@ -20,7 +20,7 @@
     "startup": "~0.3.0",
     "envs": "~0.1.4",
     "express": "~3.4.7",
-    "uuid": "~1.4.1"
+    "nedb": "~0.9.3"
   },
   "devDependencies": {
     "mocha": "*",

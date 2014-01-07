@@ -1,5 +1,17 @@
 var express = require('express');
-var uuid = require('uuid').v4;
+var NeDB = require('nedb');
+
+function createDB(name) {
+  return new NeDB({
+    filename: __dirname + '/' + name + '.db',
+    autoload: true
+  });
+}
+
+var db = {
+  users: createDB('users'),
+  games: createDB('games')
+};
 
 var app = module.exports = express();
 
@@ -8,17 +20,24 @@ app.use(express.urlencoded());
 
 app.use(function(req, res, next) {
   req.base = req.base + '/api';
+  var url = req.base + (req.url === '/' ? '' : req.url);
+  var json = res.json;
+  res.json = function(obj) {
+    obj.href = url;
+    json.call(res, obj);
+  };
   next();
 });
 
-var tokens = {};
 app.use(function(req, res, next) {
   var token = (req.get('authorization') || '').replace('Bearer ', '');
   if (!token) return next();
-  var user = tokens[token];
-  if (!user) return res.send(401);
-  req.user = users[user];
-  next();
+  db.users.findOne({secret: token}, function(err, user) {
+    if (err) return next(err);
+    if (!user) return res.send(401);
+    req.user = user;
+    next();
+  });
 });
 
 app.get('/', function(req, res, next) {
@@ -49,41 +68,48 @@ app.get('/', function(req, res) {
   });
 });
 
-var games = {};
-app.get('/games', restrict(), function(req, res) {
-  res.json({
-    data: Object.keys(games).map(function(id) {
-      return {
-        href: req.base + '/games/' + id
-      };
-    }),
-    create: {
-      method: 'POST',
-      action: req.base + '/games',
-      input: {
-        name: {
-          type: 'text'
+app.get('/games', restrict(), function(req, res, next) {
+  db.games.find({}, function(err, games) {
+    if (err) return next(err);
+    res.json({
+      data: games.map(function(game) {
+        return {
+          href: req.base + '/games/' + game._id
+        };
+      }),
+      create: {
+        method: 'POST',
+        action: req.base + '/games',
+        input: {
+          name: {
+            type: 'text'
+          }
         }
       }
-    }
+    });
   });
 });
 
 app.post('/games', restrict(), function(req, res, next) {
   var game = req.body;
   if (!game.name) return next(new Error('request missing "name" parameter'));
-  var id = uuid();
-  games[id] = {
+  var data = {
     name: game.name,
-    owner: req.user.id
+    owner: req.user._id
   };
-  res.redirect(303, req.base + '/games/' + id);
+  db.games.insert(data, function(err, doc) {
+    if (err) return next(err);
+    res.redirect(303, req.base + '/games/' + doc._id);
+  });
 });
 
 app.param('game', function(req, res, next, id) {
-  if (!games[id]) return res.send(404);
-  res.locals.game = games[id];
-  next();
+  db.games.findOne({_id: id}, function(err, game) {
+    if (err) return next(err);
+    if (!game) return res.send(404);
+    res.locals.game = game;
+    next();
+  });
 });
 
 app.get('/games/:game', restrict(), function(req, res) {
@@ -108,7 +134,9 @@ app.get('/games/:game', restrict(), function(req, res) {
     json.chat = {
       href: req.base + '/games/' + req.params.game + 'chat'
     };
-  } else if (game.owner !== req.user.id) {
+  }
+
+  if (!game.opponent && game.owner !== req.user._id) {
     json.join = {
       method: 'POST',
       action: req.base + '/games/' + req.params.game
@@ -119,17 +147,25 @@ app.get('/games/:game', restrict(), function(req, res) {
 });
 
 app.post('/games/:game', restrict(), function(req, res) {
-  if (res.locals.game.opponent) return res.send(409);
-  res.locals.game.oppponent = res.user.id;
-  res.locals.game.turn = 0;
-  res.redirect(req.base + '/games/' + req.params.game);
+  var game = res.locals.game;
+  if (game.opponent) return res.send(409);
+  game.opponent = req.user._id;
+  game.turn = 0;
+  db.games.update({_id: req.params.game}, game, function(err) {
+    res.redirect(req.base + '/games/' + req.params.game);
+  });
 });
 
-var users = {};
-
-app.get('/users', function(req, res) {
-  res.json({
-    data: [] // TODO
+app.get('/users', function(req, res, next) {
+  db.users.find({}, function(err, users) {
+    if (err) return next(err);
+    res.json({
+      data: users.map(function(user) {
+        return {
+          href: req.base + '/users/' + user._id
+        };
+      })
+    });
   });
 });
 
@@ -138,20 +174,22 @@ app.post('/users', function(req, res, next) {
   if (!user) return next(new Error('missing body'));
   if (!user.name) return next(new Error('missing name'));
   if (!user.secret) return next(new Error('missing secret'));
-  var id = uuid();
-  users[id] = {
+  var user = {
     name: user.name,
     secret: user.secret
   };
-  tokens[user.secret] = id;
-  res.redirect(303, req.base + '/users/' + id);
+  db.users.insert(user, function(err, doc) {
+    res.redirect(303, req.base + '/users/' + doc._id);
+  });
 });
 
 app.param('user', function(req, res, next, id) {
-  var user = users[id];
-  if (!user) return res.send(404);
-  res.locals.user = user;
-  next();
+  db.users.findOne({_id: id}, function(err, user) {
+    if (err) return next(err);
+    if (!user) return res.send(404);
+    res.locals.user = user;
+    next();
+  });
 });
 
 app.get('/users/:user', function(req, res) {
@@ -163,7 +201,7 @@ app.get('/users/:user', function(req, res) {
     losses: user.losses || 0
   };
 
-  if (req.user && req.user.id === req.params.user) {
+  if (req.user && req.user._id === req.params.user) {
     json.update = {
       method: 'PUT',
       action: req.base + '/users/' + req.params.user,
