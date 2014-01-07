@@ -5,6 +5,8 @@
 var app = require('.');
 var routes = require('./routes');
 
+require('./controllers/login');
+
 /**
  * Initialize aux partials
  */

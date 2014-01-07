@@ -1,1 +1,12 @@
-h1 Welcome to the simple-stack experience
+form(data-ng-controller="LoginController", data-hyper-form=".login", data-hyper-handle="setSecret")
+  input(data-hyper-input="inputs.name")
+  input(data-hyper-input="inputs.secret")
+  input(type="submit")
+
+div(data-hyper=".games")
+  ul
+    li(data-ng-repeat="game in games", data-hyper-bind="game.name")
+  form(data-hyper-form=".games.create")
+    legend Create Game
+    input(data-ng-repeat="input in inputs", data-hyper-input="input")
+    input(type="submit")

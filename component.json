@@ -5,14 +5,16 @@
   "version": "0.0.1",
   "keywords": [],
   "dependencies": {
-    "CamShaft/simple-ui": "*"
+    "CamShaft/simple-ui": "*",
+    "component/cookie": "*"
   },
   "development": {},
   "main": "public/javascripts/main.js",
   "scripts": [
     "public/javascripts/index.js",
     "public/javascripts/main.js",
-    "public/javascripts/routes.js"
+    "public/javascripts/routes.js",
+    "public/javascripts/controllers/login.js"
   ],
   "styles": [
     "public/stylesheets/index.styl"

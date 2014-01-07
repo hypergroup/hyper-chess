@@ -19,7 +19,8 @@
     "simple-stack-ui": "~0.2.2",
     "startup": "~0.3.0",
     "envs": "~0.1.4",
-    "express": "~3.4.7"
+    "express": "~3.4.7",
+    "uuid": "~1.4.1"
   },
   "devDependencies": {
     "mocha": "*",
