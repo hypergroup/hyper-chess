@@ -10,8 +10,44 @@ function createDB(name) {
 
 var db = {
   users: createDB('users'),
-  games: createDB('games')
+  games: createDB('games'),
+  state: createDB('state')
 };
+
+var init = [
+  {'position': 'a1', 'piece': 'rook', player: 0},
+  {'position': 'b1', 'piece': 'knight', player: 0},
+  {'position': 'c1', 'piece': 'bishop', player: 0},
+  {'position': 'd1', 'piece': 'king', player: 0},
+  {'position': 'e1', 'piece': 'queen', player: 0},
+  {'position': 'f1', 'piece': 'bishop', player: 0},
+  {'position': 'g1', 'piece': 'knight', player: 0},
+  {'position': 'h1', 'piece': 'rook', player: 0},
+  {'position': 'a2', 'piece': 'pawn', player: 0},
+  {'position': 'b2', 'piece': 'pawn', player: 0},
+  {'position': 'c2', 'piece': 'pawn', player: 0},
+  {'position': 'd2', 'piece': 'pawn', player: 0},
+  {'position': 'e2', 'piece': 'pawn', player: 0},
+  {'position': 'f2', 'piece': 'pawn', player: 0},
+  {'position': 'g2', 'piece': 'pawn', player: 0},
+  {'position': 'h2', 'piece': 'pawn', player: 0},
+  {'position': 'a7', 'piece': 'pawn', player: 1},
+  {'position': 'b7', 'piece': 'pawn', player: 1},
+  {'position': 'c7', 'piece': 'pawn', player: 1},
+  {'position': 'd7', 'piece': 'pawn', player: 1},
+  {'position': 'e7', 'piece': 'pawn', player: 1},
+  {'position': 'f7', 'piece': 'pawn', player: 1},
+  {'position': 'g7', 'piece': 'pawn', player: 1},
+  {'position': 'h7', 'piece': 'pawn', player: 1},
+  {'position': 'a8', 'piece': 'rook', player: 1},
+  {'position': 'b8', 'piece': 'knight', player: 1},
+  {'position': 'c8', 'piece': 'bishop', player: 1},
+  {'position': 'd8', 'piece': 'king', player: 1},
+  {'position': 'e8', 'piece': 'queen', player: 1},
+  {'position': 'f8', 'piece': 'bishop', player: 1},
+  {'position': 'g8', 'piece': 'knight', player: 1},
+  {'position': 'h8', 'piece': 'rook', player: 1}
+];
 
 var app = module.exports = express();
 
@@ -130,10 +166,6 @@ app.get('/games/:game', restrict(), function(req, res) {
     json.state = {
       href: req.base + '/games/' + req.params.game + '/state'
     };
-
-    json.chat = {
-      href: req.base + '/games/' + req.params.game + 'chat'
-    };
   }
 
   if (!game.opponent && game.owner !== req.user._id) {
@@ -143,16 +175,68 @@ app.get('/games/:game', restrict(), function(req, res) {
     };
   }
 
+  if (game.opponent === req.user._id || game.owner === req.user._id) {
+    json.chat = {
+      href: req.base + '/games/' + req.params.game + '/chat'
+    };
+  }
+
   res.json(json);
 });
 
-app.post('/games/:game', restrict(), function(req, res) {
+app.post('/games/:game', restrict(), function(req, res, next) {
   var game = res.locals.game;
+  // There's probably a race condition here
   if (game.opponent) return res.send(409);
   game.opponent = req.user._id;
-  game.turn = 0;
   db.games.update({_id: req.params.game}, game, function(err) {
-    res.redirect(req.base + '/games/' + req.params.game);
+    var state = {
+      turn: 0,
+      pieces: init,
+      game: game._id
+    };
+    db.state.insert(state, function(err) {
+      if (err) return next(err);
+      res.redirect(req.base + '/games/' + req.params.game);
+    });
+  });
+});
+
+app.get('/games/:game/state', function(req, res, next) {
+  db.state.findOne({game: req.params.game}, function(err, state) {
+    if (err) return next(err);
+    if (!state) return res.send(404);
+
+    var game = res.locals.game;
+    var isOwner = game.owner === req.user._id;
+    var isOpp = game.opponent === req.user._id;
+    res.json({
+      data: state.pieces.map(function(piece) {
+        var pstate = {
+          type: piece.piece,
+          position: piece.position,
+          player: {
+            href: req.base + '/users/' + (piece.player ? game.opponent : game.owner)
+          }
+        };
+
+        if (isOwner && piece.player === 0 && state.turn % 2 === 0
+           || isOpp && piece.player === 1 && state.turn % 2 === 1) {
+          pstate.move = {
+            action: req.base + '/games/:game/state',
+            method: 'POST',
+            input: {
+              position: {
+                type: 'select'
+              }
+            }
+          };
+        }
+
+        return pstate;
+      }),
+      turn: state.turn
+    });
   });
 });
 
