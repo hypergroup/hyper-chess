@@ -223,11 +223,16 @@ app.get('/games/:game/state', function(req, res, next) {
         if (isOwner && piece.player === 0 && state.turn % 2 === 0
            || isOpp && piece.player === 1 && state.turn % 2 === 1) {
           pstate.move = {
-            action: req.base + '/games/:game/state',
+            action: req.base + '/games/' + req.params.game + '/state',
             method: 'POST',
             input: {
+              prev: {
+                value: pstate.position,
+                type: 'hidden'
+              },
               position: {
-                type: 'select'
+                type: 'select',
+                options: computeMoves(piece, state.pieces)
               }
             }
           };
@@ -313,3 +318,6 @@ function restrict() {
   };
 }
 
+function computeMoves(piece, pieces) {
+  return [];
+}

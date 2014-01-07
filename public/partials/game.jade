@@ -7,3 +7,6 @@ div(data-hyper="game.state as pieces")
     span(data-hyper-bind="piece.type")
     |  - 
     span(data-hyper-bind="piece.position")
+    form(data-hyper-form="piece.move")
+      input(data-ng-repeat="input in inputs", data-hyper-input="input")
+      input(type="submit")
