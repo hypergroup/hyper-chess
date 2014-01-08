@@ -93,6 +93,13 @@ app.get('/games', restrict(), function(req, res, next) {
           href: req.base + '/games/' + game._id
         };
       }),
+      open: games.filter(function(game) {
+        return !game.black;
+      }).map(function(game) {
+        return {
+          href: req.base + '/games/' + game._id
+        };
+      }),
       create: {
         method: 'POST',
         action: req.base + '/games',
@@ -117,6 +124,7 @@ app.post('/games', restrict(), function(req, res, next) {
     if (err) return next(err);
     var url = req.base + '/games/' + doc._id;
     notify(url);
+    notify(req.base + '/games');
     res.redirect(303, url);
   });
 });
@@ -161,6 +169,8 @@ app.get('/games/:game', restrict(), function(req, res) {
     json.chat = {
       href: req.base + '/games/' + req.params.game + '/chat'
     };
+
+    json.me = game.white === req.user._id ? 'white' : 'black';
   }
 
   res.json(json);
@@ -205,10 +215,10 @@ app.get('/games/:game/state', function(req, res, next) {
       var json = {
         position: square,
         type: piece.type,
-        color: piece.color
+        color: piece.color === 'w' ? 'white' : 'black'
       };
-      if (isWhite && turn === 'w' && json.color === 'w'
-       || isBlack && turn === 'b' && json.color === 'b') {
+      if (isWhite && turn === 'w' && piece.color === 'w'
+       || isBlack && turn === 'b' && piece.color === 'b') {
         var moves = board.moves({square: json.position});
         if (moves.length) {
           json.move = {
@@ -233,7 +243,7 @@ app.get('/games/:game/state', function(req, res, next) {
 
     res.json({
       data: pieces,
-      turn: turn,
+      turn: (turn === 'w' ? 'white' : 'black'),
       check: board.in_check(),
       checkmake: board.in_checkmate(),
       draw: board.in_draw(),
