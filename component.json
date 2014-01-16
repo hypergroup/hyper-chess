@@ -1,20 +1,19 @@
 {
-  "repo": "CamShaft/hyper-chess",
+  "repo": "hypergroup/hyper-chess",
   "name": "hyper-chess",
   "description": "Chess hypermedia api",
   "version": "0.0.1",
   "keywords": [],
   "dependencies": {
     "CamShaft/simple-ui": "*",
+    "CamShaft/component-angular": "*",
     "component/cookie": "*",
-    "CamShaft/hyper-emitter": "*",
-    "CamShaft/hyper-emitter-ws": "*"
+    "hypergroup/ng-hyper-emitter-ws": "*"
   },
   "development": {},
-  "main": "public/javascripts/main.js",
+  "main": "public/javascripts/index.js",
   "scripts": [
     "public/javascripts/index.js",
-    "public/javascripts/main.js",
     "public/javascripts/routes.js",
     "public/javascripts/controllers/login.js"
   ],

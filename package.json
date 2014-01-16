@@ -16,12 +16,12 @@
     "npm": "1.x.x"
   },
   "dependencies": {
-    "simple-stack-ui": "~0.2.2",
+    "simple-stack-ui": "git+https://github.com/simple-app/simple-stack-ui.git#stylus-revert",
     "startup": "~0.3.0",
     "envs": "~0.1.4",
     "express": "~3.4.7",
     "nedb": "~0.9.3",
-    "chess.js": "jhlywa/chess.js",
+    "chess.js": "git+https://github.com/jhlywa/chess.js",
     "superagent": "~0.15.7"
   },
   "devDependencies": {
