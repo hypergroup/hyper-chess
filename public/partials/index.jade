@@ -12,5 +12,7 @@ div(data-hyper=".games")
     input(data-ng-repeat="input in inputs", data-hyper-input="input")
     input(type="submit")
 
-.board
+div(data-hyper=".users")
+  ul
+    li(data-ng-repeat="user in users", data-hyper-bind="user.name")
 

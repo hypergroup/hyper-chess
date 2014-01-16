@@ -84,7 +84,7 @@ app.get('/', function(req, res) {
   });
 });
 
-app.get('/games', restrict(), function(req, res, next) {
+app.get('/games', function(req, res, next) {
   db.games.find({}, function(err, games) {
     if (err) return next(err);
     res.json({
@@ -138,7 +138,7 @@ app.param('game', function(req, res, next, id) {
   });
 });
 
-app.get('/games/:game', restrict(), function(req, res) {
+app.get('/games/:game', function(req, res) {
   var game = res.locals.game;
 
   var json = {
@@ -158,14 +158,14 @@ app.get('/games/:game', restrict(), function(req, res) {
     };
   }
 
-  if (!game.black && game.white !== req.user._id) {
+  if (!game.black && req.user && game.white !== req.user._id) {
     json.join = {
       method: 'POST',
       action: req.base + '/games/' + req.params.game
     };
   }
 
-  if (game.black === req.user._id || game.white === req.user._id) {
+  if (req.user && (game.black === req.user._id || game.white === req.user._id)) {
     json.chat = {
       href: req.base + '/games/' + req.params.game + '/chat'
     };
@@ -201,8 +201,8 @@ app.get('/games/:game/state', function(req, res, next) {
     if (!state) return res.send(404);
 
     var game = res.locals.game;
-    var isWhite = game.white === req.user._id;
-    var isBlack = game.black === req.user._id;
+    var isWhite = game.white === (req.user || {})._id;
+    var isBlack = game.black === (req.user || {})._id;
 
     var board = new Chess(state.board);
 
@@ -253,7 +253,7 @@ app.get('/games/:game/state', function(req, res, next) {
   });
 });
 
-app.post('/games/:game/state', function(req, res, next) {
+app.post('/games/:game/state', restrict(), function(req, res, next) {
   var game = res.locals.game;
   if (!req.body || !req.body.position) return next(new Error('missing position parameter'));
   db.state.findOne({game: req.params.game}, function(err, state) {
