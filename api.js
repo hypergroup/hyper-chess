@@ -3,6 +3,7 @@ var NeDB = require('nedb');
 var Chess = require('chess.js').Chess;
 var superagent = require('superagent');
 var envs = require('envs');
+var debug = require('debug')('hyper-chess:api');
 
 function createDB(name) {
   return new NeDB({

@@ -5,28 +5,15 @@
   "version": "0.0.1",
   "keywords": [],
   "dependencies": {
-    "CamShaft/simple-ui": "*",
-    "CamShaft/component-angular": "*",
     "component/cookie": "*",
-    "hypergroup/ng-hyper-emitter-ws": "*"
+    "hypergroup/ng-hyper-emitter-ws": "*",
+    "poegroup/poe-ui": "^0.4.4",
+    "camshaft/component-angular": "1.2.16",
+    "camshaft/component-angular-route": "1.2.16"
   },
+  "paths": [
+    "node_modules"
+  ],
   "development": {},
-  "main": "public/javascripts/index.js",
-  "scripts": [
-    "public/javascripts/index.js",
-    "public/javascripts/routes.js",
-    "public/javascripts/controllers/login.js"
-  ],
-  "styles": [
-    "public/stylesheets/index.styl"
-  ],
-  "angular-templates": [
-    "public/partials/footer.jade",
-    "public/partials/header.jade",
-    "public/partials/index.jade",
-    "public/partials/game.jade",
-    "public/partials/sidenav.jade"
-  ],
-  "license": "MIT",
-  "remotes": []
+  "license": "MIT"
 }

@@ -2,21 +2,10 @@
  * Module dependencies
  */
 
-var app = module.exports = require('simple-ui')('hyper-chess', [
-  require('ng-hyper-emitter-ws').name
-], require);
+var App = require('poe-ui');
 
 /**
- * Initialize the controller
+ * Expose the app
  */
 
-app.initController('login');
-
-/**
- * Start the app
- */
-
-app.start(function($injector) {
-  var emitter = $injector.get('hyperEmitterWs');
-  emitter({port: 80, host: 'hyper-emitter.herokuapp.com'});
-});
+var app = module.exports = App('hyper-chess');

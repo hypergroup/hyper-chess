@@ -2,7 +2,7 @@
  * Module dependencies
  */
 
-var stack = require('simple-stack-ui');
+var stack = require('poe-ui');
 var envs = require('envs');
 
 /**
@@ -10,7 +10,7 @@ var envs = require('envs');
  */
 
 var app = module.exports = stack({
-  restricted: false
+  restricted: false // TODO enable this
 });
 
 /**
@@ -18,10 +18,6 @@ var app = module.exports = stack({
  */
 
 app.env('API_URL', '/api');
-app.env('WS_URL', envs('EMITTER_URL'));
-
-/**
- * Mount the api
- */
+app.env('EMITTER_URL', envs('EMITTER_URL'));
 
 app.useBefore('router', '/api', require('./api'));

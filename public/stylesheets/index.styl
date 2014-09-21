@@ -1,9 +1,130 @@
-// Dependencies
-@import 'nib'
+/**
+ * Module dependencies
+ */
 
-// Helpers
-@import 'variables'
-@import 'mixins'
+@require 'shoelace-ui-aglet'
+@require 'nib'
 
-// Core
-@import 'main'
+// devices
+
+$xs = 480px
+$sm = 760px
+$md = 980px
+$lg = 1200px
+
+// screen
+
+screen(select, size)
+  return unquote('screen and (' + select + '-width:' + size + ')')
+
+$screen-xs = screen('min', $xs)
+$screen-sm = screen('min', $sm)
+$screen-md = screen('min', $md)
+$screen-lg = screen('min', $lg)
+
+// resize
+
+resize(size)
+  .board
+    ratio = 2
+    center = unquote('calc(' + (100 / ratio) + '% - ' + (size / (ratio * 2)) + ')')
+    top center
+    left center
+    height (size / ratio)
+    width (size / ratio)
+  .piece
+    font-size round(size / 24)
+
+// queries
+
+@media $screen-xs
+  resize($xs)
+@media $screen-sm
+  resize($sm)
+@media $screen-md
+  resize($md)
+@media $screen-lg
+  resize($lg)
+
+// board styles
+
+.board
+  box-sizing content-box
+  background white
+  position absolute
+  border 3px solid black
+
+.row
+.column
+  relative top
+  float left
+.column
+  height 100%
+  width 12.5%
+.row
+  width 100%
+  height 12.5%
+  $bg = rgba(black, .2)
+  &:nth-child(even)
+    .column:nth-child(even)
+      background $bg
+    .column:nth-child(odd)
+      background white
+  &:nth-child(odd)
+    .column:nth-child(even)
+      background white
+    .column:nth-child(odd)
+      background $bg
+
+// pieces
+
+.piece
+  height 12.5%
+  width 12.5%
+  position absolute
+  line-height 1.25
+  text-align center
+  z-index 2
+  for x, i in a b c d e f g h
+    for y in 1..8
+      &.{x}{y}
+        left (12.5 * i) * 1%
+        bottom (12.5 * (y - 1)) * 1%
+
+  &.white.k:before
+    content: "♔"
+  &.white.q:before
+    content: "♕"
+  &.white.r:before
+    content: "♖"
+  &.white.b:before
+    content: "♗"
+  &.white.n:before
+    content: "♘"
+  &.white.p:before
+    content: "♙"
+
+  &.black.k:before
+    content: "♚"
+  &.black.q:before
+    content: "♛"
+  &.black.r:before
+    content: "♜"
+  &.black.b:before
+    content: "♝"
+  &.black.n:before
+    content: "♞"
+  &.black.p:before
+    content: "♟"
+
+  form
+    text-align left
+    absolute top
+    width 100%
+    height 100%
+    // quick hack
+    div
+      relative top
+      top -38%
+    input[type=submit]
+      absolute bottom

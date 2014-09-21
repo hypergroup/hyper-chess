@@ -16,17 +16,19 @@
     "npm": "1.x.x"
   },
   "dependencies": {
-    "simple-stack-ui": "git+https://github.com/simple-app/simple-stack-ui.git#stylus-revert",
+    "poe-ui": "*",
     "startup": "~0.3.0",
     "envs": "~0.1.4",
     "express": "~3.4.7",
     "nedb": "~0.9.3",
     "chess.js": "git+https://github.com/jhlywa/chess.js",
-    "superagent": "~0.15.7"
+    "superagent": "~0.15.7",
+    "shoelace-ui-aglet": "^0.1.0"
   },
   "devDependencies": {
     "mocha": "*",
     "should": "*",
-    "lr": "*"
+    "lr": "*",
+    "debug": "^2.0.0"
   }
 }
