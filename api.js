@@ -246,7 +246,7 @@ app.get('/games/:game/state', function(req, res, next) {
       data: pieces,
       turn: (turn === 'w' ? 'white' : 'black'),
       check: board.in_check(),
-      checkmake: board.in_checkmate(),
+      checkmate: board.in_checkmate(),
       draw: board.in_draw(),
       stalemate: board.in_stalemate(),
       threefold: board.in_threefold_repetition()

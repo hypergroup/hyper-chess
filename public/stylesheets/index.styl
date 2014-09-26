@@ -5,6 +5,9 @@
 @require 'shoelace-ui-aglet'
 @require 'nib'
 
+body
+  padding 20px
+
 // devices
 
 $xs = 480px
@@ -122,9 +125,7 @@ resize(size)
     absolute top
     width 100%
     height 100%
-    // quick hack
-    div
-      relative top
-      top -38%
+    select
+      height 14px
     input[type=submit]
       absolute bottom

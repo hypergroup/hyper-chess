@@ -16,14 +16,15 @@
     "npm": "1.x.x"
   },
   "dependencies": {
-    "poe-ui": "*",
-    "startup": "~0.3.0",
+    "chess.js": "git+https://github.com/jhlywa/chess.js",
     "envs": "~0.1.4",
     "express": "~3.4.7",
+    "hyperagent": "^0.2.1",
     "nedb": "~0.9.3",
-    "chess.js": "git+https://github.com/jhlywa/chess.js",
-    "superagent": "~0.15.7",
-    "shoelace-ui-aglet": "^0.1.0"
+    "poe-ui": "*",
+    "shoelace-ui-aglet": "^0.1.0",
+    "startup": "~0.3.0",
+    "superagent": "~0.15.7"
   },
   "devDependencies": {
     "mocha": "*",

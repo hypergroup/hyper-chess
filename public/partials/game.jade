@@ -2,6 +2,15 @@ h1(data-hyper-bind="game.name")
 form(data-hyper-form="game.join")
   input(type="submit", value="Join Game")
 
+a(data-hyper-link="/") Back
+
+.status()
+  h2(data-hyper="game.state.check", data-ng-show="check") CHECK
+  h2(data-hyper="game.state.checkmate", data-ng-show="checkmate") CHECKMATE!!!
+  h2(data-hyper="game.state.draw", data-ng-show="draw") DRAW
+  h2(data-hyper="game.state.stalemate", data-ng-show="stalemate") STALEMATE
+  h2(data-hyper="game.state.threefold", data-ng-show="threefold") THREEFOLD
+
 .board(data-hyper="game.state as pieces")
   - for (var i = 0; i < 8; i++)
     .row
@@ -10,9 +19,10 @@ form(data-hyper-form="game.join")
   .piece(data-ng-repeat="piece in pieces",
          data-hyper="piece.position, piece.color, piece.type",
          data-ng-class="[position, color, type]")
-    .move(data-ng-repeat="option in piece.move.input.position.options",
-          data-hyper="option.text, option.value",
-          data-ng-class="[text, value]")
+    .options(data-hyper="piece.move.input.position.options")
+      .move(data-ng-repeat="option in options",
+            data-hyper="option.text, option.value",
+            data-ng-class="[text, value]")
 
     form(data-hyper-form="piece.move")
       input(data-ng-repeat="input in inputs",
