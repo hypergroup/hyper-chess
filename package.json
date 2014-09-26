@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "chess.js": "git+https://github.com/jhlywa/chess.js",
+    "debug": "^2.0.0",
     "envs": "~0.1.4",
     "express": "~3.4.7",
     "hyperagent": "^0.2.1",
